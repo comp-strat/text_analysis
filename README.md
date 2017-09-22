@@ -1,2 +1,2 @@
-# parsing_HTML
-Code and data for URAP team that parses HTML output of web scraping—starting with the micro-sample!
+# text_analysis
+Code and data for URAP team that analyzes scraping output using computational text analysis--starting with the micro-sample!
