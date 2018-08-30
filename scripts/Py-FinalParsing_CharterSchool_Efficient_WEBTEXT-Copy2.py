@@ -22,11 +22,8 @@ import logging
 # add filemode="w" to overwrite
 #logging.basicConfig(filename="df_chunk_index.log", level=logging.INFO)
 
-<<<<<<< HEAD
 #logging.basicConfig(filename="rows_overlaps_far.log", level=logging.INFO)
-=======
-logging.basicConfig(filename="rows_overlaps_far.log", level=logging.INFO)
->>>>>>> 9a0950eab1b5880c606b0b13e86e7ef229361ec9
+
 
  
 
@@ -45,11 +42,8 @@ folder_prefix = '/vol_b/data/'
 # In[48]:
 
 
-<<<<<<< HEAD
 new_data = pd.read_csv(folder_prefix + "nowdata/parsing/current_df4_WEBTEXT.csv", sep="\t", low_memory=False, encoding="utf-8")
-=======
-new_data = pd.read_csv(folder_prefix + "current_df_WEBTEXT.csv", sep="\t", low_memory=False, encoding="utf-8")
->>>>>>> 9a0950eab1b5880c606b0b13e86e7ef229361ec9
+
 
 
 # In[4]:
@@ -682,17 +676,11 @@ def chunk_assign(df_chunk):
         need_clean_chunk['OVERLAPS_REMOVED'] = 1
         
         if num==0: # Save first slice to new file (overwriting if needed)
-<<<<<<< HEAD
             need_clean_chunk.to_csv(folder_prefix + "parsed_df_5.csv", mode="w", index=False, header=df_chunk.columns.values, sep="\t", encoding="utf-8")
         
         else:
             need_clean_chunk.to_csv(folder_prefix + "parsed_df_5.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
-=======
-            need_clean_chunk.to_csv(folder_prefix + "parsed_df_2.csv", mode="w", index=False, header=df_chunk.columns.values, sep="\t", encoding="utf-8")
-        
-        else:
-            need_clean_chunk.to_csv(folder_prefix + "parsed_df_2.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
->>>>>>> 9a0950eab1b5880c606b0b13e86e7ef229361ec9
+
     
 #     curr_final_df = pd.read_csv(merged_df_file , sep="\t", low_memory=False, encoding="utf-8")
 #     print()
@@ -721,13 +709,9 @@ num = 0
 #tqdm.pandas(desc="Processing all: " )
 orig_num_rows = new_data.shape[0] 
 
-<<<<<<< HEAD
 # curr_merged_df = pd.read_csv(merged_df_file , sep="\t", low_memory=False, encoding="utf-8")
 # merged_num_rows = curr_merged_df.shape[0]
-=======
-curr_merged_df = pd.read_csv(merged_df_file , sep="\t", low_memory=False, encoding="utf-8")
-merged_num_rows = curr_merged_df.shape[0]
->>>>>>> 9a0950eab1b5880c606b0b13e86e7ef229361ec9
+
 
 numcpus = len(os.sched_getaffinity(0)) # Detect and assign number of available CPUs
 p = mp.Pool(numcpus)
@@ -735,7 +719,6 @@ result_df = p.map(chunk_assign, arr_of_dfs)
 
 starttime=time.time()
 
-<<<<<<< HEAD
 # while True:   
 #     second_df = pd.read_csv(folder_prefix + "parsed_df_2.csv", sep="\t", low_memory=False, encoding="utf-8")
 #     second_num_rows = second_df.shape[0]
@@ -744,16 +727,7 @@ starttime=time.time()
 #     logging.info(sum_so_far)
 #     print("Overlap == 0 row : " + str(second_num_rows)+ " . Total first + second num rows : " + str(sum_so_far) +  " . Num rows to go : " + str(diff))
 #     time.sleep(120.0 - ((time.time() - starttime) % 120.0))
-=======
-while True:   
-    second_df = pd.read_csv(folder_prefix + "parsed_df_2.csv", sep="\t", low_memory=False, encoding="utf-8")
-    second_num_rows = second_df.shape[0]
-    sum_so_far = merged_num_rows + second_num_rows
-    diff = orig_num_rows - sum_so_far
-    logging.info(sum_so_far)
-    print("Overlap == 0 row : " + str(second_num_rows)+ " . Total first + second num rows : " + str(sum_so_far) +  " . Num rows to go : " + str(diff))
-    time.sleep(120.0 - ((time.time() - starttime) % 120.0))
->>>>>>> 9a0950eab1b5880c606b0b13e86e7ef229361ec9
+
 
 
 
