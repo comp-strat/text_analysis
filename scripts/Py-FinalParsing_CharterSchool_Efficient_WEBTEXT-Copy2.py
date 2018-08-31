@@ -629,11 +629,8 @@ def parse_df(old_list):
 # In[37]:
 
 
-<<<<<<< HEAD
-new_data['WEBTEXT'] = new_data['WEBTEXT'].fillna("0").apply(
-=======
-new_data['WEBTEXT'] = new_data['WEBTEXT'].fillna("")
->>>>>>> 9a0950eab1b5880c606b0b13e86e7ef229361ec9
+new_data['WEBTEXT'] = new_data['WEBTEXT'].fillna("0").apply(ast.literal_eval)
+
 
 arr_of_dfs = np.array_split(new_data, len(new_data['WEBTEXT']))
 
