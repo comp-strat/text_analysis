@@ -42,8 +42,7 @@ folder_prefix = '/vol_b/data/'
 # In[48]:
 
 
-new_data = pd.read_csv(folder_prefix + "nowdata/parsing/current_df4_WEBTEXT.csv", sep="\t", low_memory=False, encoding="utf-8")
-
+full_250_df = pd.read_pickle(folder_prefix + "charters_full_2015_15_250.pkl")
 
 
 # In[4]:
@@ -161,7 +160,7 @@ def create_sim_df(pages):
         for page0 in pages:
             ratios_list = []
             for page1 in pages:
-                ratios_list.append(SeqMatcher(None, page0, page1).ratio())
+                ratios_list.append(SeqMatcher(None, page0, page1).quick_ratio())
             ratio_df['Ratios'][index] = ratios_list
             sim_ind_list = np.asarray(np.where((np.asarray(ratios_list) >= 0.7) & (np.asarray(ratios_list) != 1.0))[0]).tolist()
             ratio_df['Similar'][index] = sim_ind_list
@@ -629,13 +628,15 @@ def parse_df(old_list):
 # In[37]:
 
 
-new_data['WEBTEXT'] = new_data['WEBTEXT'].fillna("0").apply(ast.literal_eval)
+full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].fillna("0").apply(ast.literal_eval)
 
+lookup = pd.read_csv(folder_prefix + "lookup.csv", sep="\t", low_memory=False, encoding="utf-8")
+unseen_df = lookup[lookup['OVERLAPS_REMOVED'] == 0]
+unseen_list = list(unseen_df['NCESSCH'])
+
+new_data = full_250_df[full_250_df['NCESSCH'].isin(unseen_list)]
 
 arr_of_dfs = np.array_split(new_data, len(new_data['WEBTEXT']))
-
-global merged_df_file
-merged_df_file = folder_prefix+"merged_df_WEBTEXT.csv" # Prepare file name
 
 
 # In[38]:
@@ -664,19 +665,16 @@ merged_df_file = folder_prefix+"merged_df_WEBTEXT.csv" # Prepare file name
 def chunk_assign(df_chunk):
     global num
     
-    need_clean_chunk = df_chunk.loc[df_chunk['OVERLAPS_REMOVED'] == 0]
     
     #already_cleaned_chunk = df_chunk.loc[df_chunk['OVERLAPS_REMOVED'] == 1] don't do anything with this
     
-    if (need_clean_chunk.shape[0] > 0): #there are actually rows which haven't been parsed yet
-        need_clean_chunk['WEBTEXT'] = need_clean_chunk['WEBTEXT'].apply(parse_df)
-        need_clean_chunk['OVERLAPS_REMOVED'] = 1
-        
+    df_chunk['WEBTEXT'] = df_chunk['WEBTEXT'].apply(parse_df)
+            
         if num==0: # Save first slice to new file (overwriting if needed)
-            need_clean_chunk.to_csv(folder_prefix + "parsed_df_5.csv", mode="w", index=False, header=df_chunk.columns.values, sep="\t", encoding="utf-8")
+            df_chunk.to_csv(folder_prefix + "parsed_df_6.csv", mode="w", index=False, header=df_chunk.columns.values, sep="\t", encoding="utf-8")
         
         else:
-            need_clean_chunk.to_csv(folder_prefix + "parsed_df_5.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+            df_chunk.to_csv(folder_prefix + "parsed_df_6.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
 
     
 #     curr_final_df = pd.read_csv(merged_df_file , sep="\t", low_memory=False, encoding="utf-8")
@@ -704,7 +702,6 @@ num = 0
 #start_time = time.time()
 #tqdm.pandas(desc="Processing:")
 #tqdm.pandas(desc="Processing all: " )
-orig_num_rows = new_data.shape[0] 
 
 # curr_merged_df = pd.read_csv(merged_df_file , sep="\t", low_memory=False, encoding="utf-8")
 # merged_num_rows = curr_merged_df.shape[0]
