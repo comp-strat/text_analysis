@@ -251,7 +251,7 @@ def parse_df(old_list):
 
 full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].fillna("0")
 
-lookup = pd.read_csv(folder_prefix + "lookup.csv", sep="\t", low_memory=False, encoding="utf-8") #fix lookup csv
+lookup = pd.read_csv(folder_prefix + "nowdata/parsing/lookup.csv", sep="\t", low_memory=False, encoding="utf-8") #fix lookup csv
 unseen_df = lookup[lookup['OVERLAPS_REMOVED'] == 0]
 unseen_list = list(set(unseen_df['NCESSCH'].tolist()))
 
@@ -278,7 +278,7 @@ def chunk_assign(df_chunk, temp_df): #Jaren chunk by chunk
     if num == 0: # Save first slice to new file (overwriting if needed)
         temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="w", index=False, header=df_chunk.columns.values, sep="\t", encoding="utf-8")
         
-    else if num >0 and num % 10 == 0:
+    elif (num > 0) and (num % 10 == 0):
         temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
 
 
@@ -295,7 +295,7 @@ numcpus = len(os.sched_getaffinity(0)) # Detect and assign number of available C
 p = mp.Pool(numcpus)
 # i call chunk_assign on each chunk, after a chunk
 temp_df = pd.DataFrame(columns=new_data.columns)
-result_df = p.map(lambda x, temp_df: chunk_assign(x, temp_df),  arr_of_dfs)
+result_df = p.map(lambda x: chunk_assign(x, temp_df), arr_of_dfs)
 
 p.close()
 
