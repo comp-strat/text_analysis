@@ -263,25 +263,11 @@ arr_of_dfs = np.array_split(new_data, len(new_data['WEBTEXT']))
 # In[ ]:
 
 
-def chunk_assign(df_chunk, temp_df): #Jaren chunk by chunk 
+def chunk_assign(df_chunk): #Jaren chunk by chunk 
     global num
     
-    
-    #already_cleaned_chunk = df_chunk.loc[df_chunk['OVERLAPS_REMOVED'] == 1] don't do anything with this
-    
     df_chunk['WEBTEXT'] = df_chunk['WEBTEXT'].apply(parse_df)
-    
-    temp_df = temp_df.append(df_chunk, ignore_index = True)
-    
-    
-            
-    if num == 0: # Save first slice to new file (overwriting if needed)
-        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="w", index=False, header=df_chunk.columns.values, sep="\t", encoding="utf-8")
-        
-    elif (num > 0) and (num % 10 == 0):
-        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
-
-
+   
     num+=1
     
     return df_chunk
@@ -293,9 +279,23 @@ def chunk_assign(df_chunk, temp_df): #Jaren chunk by chunk
 num = 0
 numcpus = len(os.sched_getaffinity(0)) # Detect and assign number of available CPUs
 p = mp.Pool(numcpus)
-# i call chunk_assign on each chunk, after a chunk
-temp_df = pd.DataFrame(columns=new_data.columns)
-result_df = p.map(lambda x: chunk_assign(x, temp_df), arr_of_dfs)
+
+ten_count = int(round(len(arr_of_dfs) /10))
+indices_arr = np.arange(len(arr_of_dfs))
+ind_subarrays = np.array_split(indices_arr, ten_count)
+
+
+for sub_array in ind_subarrays:
+    arr_dfs_chunk = arr_of_dfs[sub_array[0]: sub_array[len(sub_array) -1] +1]
+    temp_df = p.map(chunk_assign, arr_dfs_chunk)
+    
+    if num == 0: # Save first slice to new file (overwriting if needed)
+        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
+        
+    else:
+        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+
+    
 
 p.close()
 
