@@ -31,8 +31,9 @@ folder_prefix = '/vol_b/data/'
 
 # In[ ]:
 
+#is originally charters_full_2015_15_250.pkl for xxl vm , but is nowdata/charters_full_2015_250_new.pkl in large vm for testing purposes
 
-full_250_df = pd.read_pickle(folder_prefix + "charters_full_2015_15_250.pkl")
+full_250_df = pd.read_pickle(folder_prefix + "nowdata/charters_full_2015_250_new.pkl")
 
 
 # In[ ]:
@@ -69,14 +70,14 @@ def create_first_cut(pages):
                     l_n = last_triple[2]
 
                     orig_string_a = pages[a]
-                    split_li_a = orig_string_a[:zeroth_triple[0]].extend(orig_string_a[zeroth_triple[0] + z_n: last_triple[0]]).extend(orig_string_a[last_triple[0] + l_n:]) 
+                    split_li_a = orig_string_a[:zeroth_triple[0]] + " " + (orig_string_a[zeroth_triple[0] + z_n: last_triple[0]])+" " + (orig_string_a[last_triple[0] + l_n:]) 
                     #removes overlapping part in string a, removes header and footer
                     #keeps cut down part
                     cut_down_string_a = " ".join(split_li_a)
 
 
                     orig_string_b = pages[b]
-                    split_li_b = orig_string_b[:zeroth_triple[1]].extend(orig_string_b[zeroth_triple[1] + z_n: last_triple[1]]).extend(orig_string_b[last_triple[1] + l_n:]) 
+                    split_li_b = orig_string_b[:zeroth_triple[1]] + " " + (orig_string_b[zeroth_triple[1] + z_n: last_triple[1]])+" " + (orig_string_b[last_triple[1] + l_n:]) 
                     #removes overlapping part in string a
                     cut_down_string_b = " ".join(split_li_b)
 
@@ -101,14 +102,14 @@ def create_first_cut(pages):
                         l_n = last_triple[2]
 
                         orig_string_a = pages[a]
-                        split_li_a = orig_string_a[:zeroth_triple[0]].extend(orig_string_a[zeroth_triple[0] + z_n: last_triple[0]]).extend(orig_string_a[last_triple[0] + l_n:]) 
+                        split_li_a = orig_string_a[:zeroth_triple[0]] +" " + (orig_string_a[zeroth_triple[0] + z_n: last_triple[0]]) + " " +(orig_string_a[last_triple[0] + l_n:]) 
                         #removes overlapping part in string a, removes header and footer
                         #keeps cut down part
                         cut_down_string_a = " ".join(split_li_a)
 
 
                         orig_string_b = pages[b]
-                        split_li_b = orig_string_b[:zeroth_triple[1]].extend(orig_string_b[zeroth_triple[1] + z_n: last_triple[1]]).extend(orig_string_b[last_triple[1] + l_n:]) 
+                        split_li_b = orig_string_b[:zeroth_triple[1]] +" " + (orig_string_b[zeroth_triple[1] + z_n: last_triple[1]])+ " " +(orig_string_b[last_triple[1] + l_n:]) 
                         #removes overlapping part in string a
                         cut_down_string_b = " ".join(split_li_b)
 
@@ -242,6 +243,8 @@ def remove_string_overlaps(tuplist):
 
 def parse_df(old_list):
     
+#     print("INSIDE PARSE_DF, list is : " + old_list)
+    
     new_list = remove_string_overlaps(old_list)
     return new_list
 
@@ -250,25 +253,30 @@ def parse_df(old_list):
 
 
 full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].fillna("0")
+#full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].apply(ast.literal_eval) don't need
 
 lookup = pd.read_csv(folder_prefix + "nowdata/parsing/lookup.csv", sep="\t", low_memory=False, encoding="utf-8") #fix lookup csv
+
 unseen_df = lookup[lookup['OVERLAPS_REMOVED'] == 0]
 unseen_list = list(set(unseen_df['NCESSCH'].tolist()))
 
 new_data = full_250_df[full_250_df['NCESSCH'].isin(unseen_list)]
-
-arr_of_dfs = np.array_split(new_data, len(new_data['WEBTEXT']))
+ten_count = int(round(new_data.shape[0] /10))
+arr_of_dfs = np.array_split(new_data, ten_count) #gives you a list of dataframes, each dataframe has 10 rows
 
 
 # In[ ]:
 
 
 def chunk_assign(df_chunk): #Jaren chunk by chunk 
-    global num
+    
+#     print("TYPE of DF CHUNK in chunk_assign : " + str(type(df_chunk)))
     
     df_chunk['WEBTEXT'] = df_chunk['WEBTEXT'].apply(parse_df)
+    
+    #print("TYPE of DF_CHUNK : " + str(type(df_chunk)))
    
-    num+=1
+    
     
     return df_chunk
 
@@ -276,24 +284,45 @@ def chunk_assign(df_chunk): #Jaren chunk by chunk
 # In[ ]:
 
 
+global num
 num = 0
 numcpus = len(os.sched_getaffinity(0)) # Detect and assign number of available CPUs
 p = mp.Pool(numcpus)
 
-ten_count = int(round(len(arr_of_dfs) /10))
-indices_arr = np.arange(len(arr_of_dfs))
-ind_subarrays = np.array_split(indices_arr, ten_count)
 
+# indices_arr = np.arange(len(arr_of_dfs))
+# ind_subarrays = np.array_split(indices_arr, ten_count) #np.array_split gives you a list
 
-for sub_array in ind_subarrays:
-    arr_dfs_chunk = arr_of_dfs[sub_array[0]: sub_array[len(sub_array) -1] +1]
-    temp_df = p.map(chunk_assign, arr_dfs_chunk)
-    
-    if num == 0: # Save first slice to new file (overwriting if needed)
+for chunk in arr_of_dfs:
+#     print("TYPE of arr_of_dfs[0] : " + str(type(arr_of_dfs[0])))
+    chunk_arr = np.array_split(chunk, chunk.shape[0]) #split chunk into an array of dfs,
+    #p.map takes in an iterable and applies function on each element of array
+    #now chunk_arr is an array of 10 dataframes (each of which was a row previously in chunk)
+    list_of_dfs = p.map(chunk_assign, chunk_arr)
+    temp_df = pd.concat(list_of_dfs) 
+#     for i in temp_df:
+#         print("TYPE of i in TEMP_DF : " + str(type(i)))
+#     print("TYPE of TEMP_DF : " + str(type(temp_df)))
+    num +=1
+    if  num == 1: # Save first slice to new file (overwriting if needed)
+        #print("NUM  is 1 : " + str(num))
         temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
         
     else:
-        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+        #print("NUM is actually : " + str(num))
+        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_8.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+
+
+
+# for sub_array in ind_subarrays:
+#     arr_dfs_chunk = arr_of_dfs[sub_array[0]: sub_array[len(sub_array) -1] +1]
+#     temp_df = p.map(chunk_assign, arr_dfs_chunk)
+    
+#     if  num == 1: # Save first slice to new file (overwriting if needed)
+#         temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
+        
+#     else:
+#         temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
 
     
 
