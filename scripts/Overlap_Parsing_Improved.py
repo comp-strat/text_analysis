@@ -299,7 +299,7 @@ for chunk in arr_of_dfs:
     #p.map takes in an iterable and applies function on each element of array
     #now chunk_arr is an array of 10 dataframes (each of which was a row previously in chunk)
     list_of_dfs = p.map(chunk_assign, chunk_arr)
-    temp_df = pd.concat(list_of_dfs) 
+    temp_df = pd.concat(list_of_dfs, idnore_index = True) 
 #     for i in temp_df:
 #         print("TYPE of i in TEMP_DF : " + str(type(i)))
 #     print("TYPE of TEMP_DF : " + str(type(temp_df)))
@@ -310,7 +310,7 @@ for chunk in arr_of_dfs:
         
     else:
         #print("NUM is actually : " + str(num))
-        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_8.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
 
 
 
