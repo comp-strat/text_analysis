@@ -16,6 +16,7 @@ import multiprocessing as mp
 import time
 import sched
 import ast
+import logging
 
 
 
@@ -28,13 +29,14 @@ import os # For navigation
 
 folder_prefix = '/vol_b/data/'
 
+logging.basicConfig(filename="chunks_180.log", level=logging.INFO)
 
 # In[ ]:
 
 #is originally charters_full_2015_15_250.pkl for xxl vm , but is nowdata/charters_full_2015_250_new.pkl in large vm for testing purposes
 
-full_250_df = pd.read_pickle(folder_prefix + "nowdata/charters_full_2015_250_new.pkl")
-
+#full_250_df = pd.read_pickle(folder_prefix + "nowdata/charters_full_2015_250_new.pkl")
+next_df = pd.read_csv(folder_prefix + "nowdata/parsing/next_df.csv", sep="\t", low_memory=False, encoding="utf-8")
 
 # In[ ]:
 
@@ -252,17 +254,20 @@ def parse_df(old_list):
 # In[ ]:
 
 
-full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].fillna("0")
+#full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].fillna("0")
 #full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].apply(ast.literal_eval) don't need
 
-lookup = pd.read_csv(folder_prefix + "nowdata/parsing/lookup.csv", sep="\t", low_memory=False, encoding="utf-8") #fix lookup csv
+next_df['WEBTEXT'] = next_df['WEBTEXT'].fillna("0")
+next_df['WEBTEXT'] = next_df['WEBTEXT'].apply(ast.literal_eval)
 
-unseen_df = lookup[lookup['OVERLAPS_REMOVED'] == 0]
-unseen_list = list(set(unseen_df['NCESSCH'].tolist()))
+# lookup = pd.read_csv(folder_prefix + "nowdata/parsing/lookup.csv", sep="\t", low_memory=False, encoding="utf-8") #fix lookup csv
 
-new_data = full_250_df[full_250_df['NCESSCH'].isin(unseen_list)]
-ten_count = int(round(new_data.shape[0] /10))
-arr_of_dfs = np.array_split(new_data, ten_count) #gives you a list of dataframes, each dataframe has 10 rows
+# unseen_df = lookup[lookup['OVERLAPS_REMOVED'] == 0]
+# unseen_list = list(set(unseen_df['NCESSCH'].tolist()))
+
+# new_data = full_250_df[full_250_df['NCESSCH'].isin(unseen_list)]
+
+arr_of_dfs = np.array_split(next_df, next_df.shape[0]) #gives you a list of dataframes, each dataframe has 10 rows
 
 
 # In[ ]:
@@ -299,18 +304,21 @@ for chunk in arr_of_dfs:
     #p.map takes in an iterable and applies function on each element of array
     #now chunk_arr is an array of 10 dataframes (each of which was a row previously in chunk)
     list_of_dfs = p.map(chunk_assign, chunk_arr)
-    temp_df = pd.concat(list_of_dfs, idnore_index = True) 
+    temp_df = pd.concat(list_of_dfs, ignore_index = True) 
 #     for i in temp_df:
 #         print("TYPE of i in TEMP_DF : " + str(type(i)))
 #     print("TYPE of TEMP_DF : " + str(type(temp_df)))
     num +=1
     if  num == 1: # Save first slice to new file (overwriting if needed)
         #print("NUM  is 1 : " + str(num))
-        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
+        logging.info("df chunk # " + str(num))
+        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_8.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
+        
         
     else:
         #print("NUM is actually : " + str(num))
-        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_7.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+        logging.info("df chunk # " + str(num))
+        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_8.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
 
 
 
