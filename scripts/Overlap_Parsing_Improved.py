@@ -292,7 +292,7 @@ def chunk_assign(df_chunk): #Jaren chunk by chunk
 global num
 num = 0
 numcpus = len(os.sched_getaffinity(0)) # Detect and assign number of available CPUs
-p = mp.Pool(numcpus)
+#p = mp.Pool(numcpus)
 
 
 # indices_arr = np.arange(len(arr_of_dfs))
@@ -300,25 +300,26 @@ p = mp.Pool(numcpus)
 
 for chunk in arr_of_dfs:
 #     print("TYPE of arr_of_dfs[0] : " + str(type(arr_of_dfs[0])))
-    chunk_arr = np.array_split(chunk, chunk.shape[0]) #split chunk into an array of dfs,
-    #p.map takes in an iterable and applies function on each element of array
-    #now chunk_arr is an array of 10 dataframes (each of which was a row previously in chunk)
-    list_of_dfs = p.map(chunk_assign, chunk_arr)
-    temp_df = pd.concat(list_of_dfs, ignore_index = True) 
-#     for i in temp_df:
-#         print("TYPE of i in TEMP_DF : " + str(type(i)))
-#     print("TYPE of TEMP_DF : " + str(type(temp_df)))
-    num +=1
-    if  num == 1: # Save first slice to new file (overwriting if needed)
-        #print("NUM  is 1 : " + str(num))
-        logging.info("df chunk # " + str(num))
-        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_8.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
-        
-        
-    else:
-        #print("NUM is actually : " + str(num))
-        logging.info("df chunk # " + str(num))
-        temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_8.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+    with mp.Pool(processes = numcpus) as p:
+        chunk_arr = np.array_split(chunk, chunk.shape[0]) #split chunk into an array of dfs,
+        #p.map takes in an iterable and applies function on each element of array
+        #now chunk_arr is an array of 10 dataframes (each of which was a row previously in chunk)
+        list_of_dfs = p.map(chunk_assign, chunk_arr)
+        temp_df = pd.concat(list_of_dfs, ignore_index = True) 
+    #     for i in temp_df:
+    #         print("TYPE of i in TEMP_DF : " + str(type(i)))
+    #     print("TYPE of TEMP_DF : " + str(type(temp_df)))
+        num +=1
+        if  num == 1: # Save first slice to new file (overwriting if needed)
+            #print("NUM  is 1 : " + str(num))
+            logging.info("df chunk # " + str(num))
+            temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_8.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
+
+
+        else:
+            #print("NUM is actually : " + str(num))
+            logging.info("df chunk # " + str(num))
+            temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_8.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
 
 
 
