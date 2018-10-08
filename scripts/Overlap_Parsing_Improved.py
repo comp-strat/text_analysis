@@ -29,14 +29,14 @@ import os # For navigation
 
 folder_prefix = '/vol_b/data/'
 
-logging.basicConfig(filename="chunks_180.log", level=logging.INFO)
+logging.basicConfig(filename="chunks_180_2.log", level=logging.INFO)
 
 # In[ ]:
 
 #is originally charters_full_2015_15_250.pkl for xxl vm , but is nowdata/charters_full_2015_250_new.pkl in large vm for testing purposes
 
 #full_250_df = pd.read_pickle(folder_prefix + "nowdata/charters_full_2015_250_new.pkl")
-next_df = pd.read_csv(folder_prefix + "nowdata/parsing/next_df.csv", sep="\t", low_memory=False, encoding="utf-8")
+next_df = pd.read_csv(folder_prefix + "nowdata/parsing/small_df.csv", sep="\t", low_memory=False, encoding="utf-8")
 
 # In[ ]:
 
@@ -267,7 +267,7 @@ next_df['WEBTEXT'] = next_df['WEBTEXT'].apply(ast.literal_eval)
 
 # new_data = full_250_df[full_250_df['NCESSCH'].isin(unseen_list)]
 
-arr_of_dfs = np.array_split(next_df, next_df.shape[0]) #gives you a list of dataframes, each dataframe has 10 rows
+arr_of_dfs = np.array_split(next_df, next_df.shape[0]) #gives you a list of dataframes, each dataframe has 1 rows
 
 
 # In[ ]:
