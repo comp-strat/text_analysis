@@ -29,14 +29,14 @@ import os # For navigation
 
 folder_prefix = '/vol_b/data/'
 
-logging.basicConfig(filename="second_166.log", level=logging.INFO)
+logging.basicConfig(filename="eightmil_df.log", level=logging.INFO)
 
 # In[ ]:
 
 #is originally charters_full_2015_15_250.pkl for xxl vm , but is nowdata/charters_full_2015_250_new.pkl in large vm for testing purposes
 
 #full_250_df = pd.read_pickle(folder_prefix + "nowdata/charters_full_2015_250_new.pkl")
-next_df = pd.read_csv(folder_prefix + "nowdata/parsing/second_166.csv", sep="\t", low_memory=False, encoding="utf-8")
+next_df = pd.read_csv(folder_prefix + "nowdata/parsing/eightmil_df.csv", sep="\t", low_memory=False, encoding="utf-8")
 
 # In[ ]:
 
@@ -195,10 +195,10 @@ def create_second_header_cut(first_header_cut):
 
 # In[ ]:
 
-global k
 k = 0
 def remove_string_overlaps(tuplist):
-   
+    global k
+
     unique_tuplist = []
     seen_pages = set() # Initialize list of known pages for a school
     unique_pages=[]
@@ -316,13 +316,13 @@ for chunk in arr_of_dfs:
         if  num == 1: # Save first slice to new file (overwriting if needed)
             #print("NUM  is 1 : " + str(num))
             logging.info("df chunk # " + str(num))
-            temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_10.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
+            temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_11.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
 
 
         else:
             #print("NUM is actually : " + str(num))
             logging.info("df chunk # " + str(num))
-            temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_10.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+            temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_11.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
 
 
 
