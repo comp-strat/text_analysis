@@ -29,14 +29,14 @@ import os # For navigation
 
 folder_prefix = '/vol_b/data/'
 
-logging.basicConfig(filename="eightmil_df.log", level=logging.INFO)
+logging.basicConfig(filename="CMO_WEBTEXT_2.log", level=logging.INFO)
 
 # In[ ]:
 
 #is originally charters_full_2015_15_250.pkl for xxl vm , but is nowdata/charters_full_2015_250_new.pkl in large vm for testing purposes
 
 #full_250_df = pd.read_pickle(folder_prefix + "nowdata/charters_full_2015_250_new.pkl")
-next_df = pd.read_csv(folder_prefix + "nowdata/parsing/eightmil_df.csv", sep="\t", low_memory=False, encoding="utf-8")
+next_df = pd.read_csv(folder_prefix + "nowdata/parsing/cmo_left.csv", sep="\t", low_memory=False, encoding="utf-8")
 
 # In[ ]:
 
@@ -260,8 +260,8 @@ def parse_df(old_list):
 #full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].fillna("0")
 #full_250_df['WEBTEXT'] = full_250_df['WEBTEXT'].apply(ast.literal_eval) don't need
 
-next_df['WEBTEXT'] = next_df['WEBTEXT'].fillna("0")
-next_df['WEBTEXT'] = next_df['WEBTEXT'].apply(ast.literal_eval)
+next_df['CMO_WEBTEXT'] = next_df['CMO_WEBTEXT'].fillna("[]")
+next_df['CMO_WEBTEXT'] = next_df['CMO_WEBTEXT'].apply(ast.literal_eval) 
 
 # lookup = pd.read_csv(folder_prefix + "nowdata/parsing/lookup.csv", sep="\t", low_memory=False, encoding="utf-8") #fix lookup csv
 
@@ -280,7 +280,7 @@ def chunk_assign(df_chunk): #Jaren chunk by chunk
     
 #     print("TYPE of DF CHUNK in chunk_assign : " + str(type(df_chunk)))
     
-    df_chunk['WEBTEXT'] = df_chunk['WEBTEXT'].apply(parse_df)
+    df_chunk['CMO_WEBTEXT'] = df_chunk['CMO_WEBTEXT'].apply(parse_df)
     
     #print("TYPE of DF_CHUNK : " + str(type(df_chunk)))
    
@@ -316,13 +316,13 @@ for chunk in arr_of_dfs:
         if  num == 1: # Save first slice to new file (overwriting if needed)
             #print("NUM  is 1 : " + str(num))
             logging.info("df chunk # " + str(num))
-            temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_11.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
+            temp_df.to_csv(folder_prefix + "nowdata/parsing/CMO_WEBTEXT_2.csv", mode="w", index=False, header=temp_df.columns.values, sep="\t", encoding="utf-8")
 
 
         else:
             #print("NUM is actually : " + str(num))
             logging.info("df chunk # " + str(num))
-            temp_df.to_csv(folder_prefix + "nowdata/parsing/parsed_df_11.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
+            temp_df.to_csv(folder_prefix + "nowdata/parsing/CMO_WEBTEXT_2.csv", mode="a", index=False, header=False, sep="\t", encoding="utf-8")
 
 
 
