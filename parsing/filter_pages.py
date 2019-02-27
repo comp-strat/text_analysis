@@ -255,5 +255,5 @@ original_df['WEBTEXT'] = original_df['WEBTEXT'].apply(lambda row_li: filter_page
 filtered_df = original_df[['NCESSCH', 'WEBTEXT']]
 #filtered_df['WEBTEXT'] = new_webtext
 
-filtered_df.to_picke(folder_prefix + "nowdata/parsing/filtered_250.pkl")
+filtered_df.to_pickle(folder_prefix + "nowdata/parsing/filtered_250.pkl")
 #print(num)
