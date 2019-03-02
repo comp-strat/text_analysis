@@ -30,16 +30,24 @@ import string
 
 folder_prefix = '/vol_b/data/'
 
-logging.basicConfig(filename="filter_pages250.log", level=logging.INFO)
+logging.basicConfig(filename="filter_pages10.log", level=logging.INFO)
 
 
 original_df = pd.read_pickle(folder_prefix + 'nowdata/charters_2015.pkl')
 
+new_ser = []
+for li in original_df['WEBTEXT']:
+    if li == "":
+        new_ser.append([])
+    else:
+        new_ser.append(li)
+        
+
+
 
 # In[6]:
 
-
-#original_df
+original_df['WEBTEXT'] = new_ser
 
 
 # In[20]:
@@ -133,7 +141,8 @@ def dict_count2(text):
 def takeSecond(elem):
     return elem[1]
 
-
+def takeThird(elem):
+    return elem[2]
 
 # In[21]:
 
@@ -158,21 +167,23 @@ def filter_pages(li_tuples, MIN_HITCOUNT, MAX_NUMPAGES):
     
     for tup in li_tuples:
         if len(tup) == 4:
-            school_pages.append(tup[3])
+            school_pages.append([tup[2], tup[3]])
     
-    
+    #depth = 0 #index, gow far in they are, depth in school_pages[1st part of tuple]
     li_pairs = []
     #index = 0
-    for page in school_pages:
+    for depth, page in school_pages:
         hit_count = dict_count2(page.lower())
         if hit_count >= MIN_HITCOUNT:
-            li_pairs.append([page, hit_count])
+            li_pairs.append([page, hit_count - int(depth)]) #prioritize pages with highest hit count and closest to  0th depth
         
         #index+=1
     
     #sort the tuples/sublists by highest to lowest hit count
     #take the top 250 , or less is len(school_pages) < 250
-    sorted_tuples = sorted(li_pairs, key=takeSecond, reverse = True)
+
+    sorted_tuples = sorted(li_pairs,  reverse = True) #descending, prioritize pages with highest hit count and closest to  0th depth
+       
     filtered_tuples = []
     if len(sorted_tuples) < MAX_NUMPAGES:
         filtered_tuples = sorted_tuples
@@ -189,11 +200,6 @@ def filter_pages(li_tuples, MIN_HITCOUNT, MAX_NUMPAGES):
     num = num + 1
     
     return final_pages
-    
-    
-            
-        
-        
     
 
 
@@ -241,19 +247,19 @@ def filter_pages(li_tuples, MIN_HITCOUNT, MAX_NUMPAGES):
 
 # In[23]:
 
-def middle(original_df):
-    index = 0    
-    webtext= original_df['WEBTEXT'].apply(lambda row: filter_pages(row, MIN_HITCOUNT = 1, MAX_NUMPAGES = 250))
-    return webtext
+# def middle(original_df):
+#     index = 0    
+#     webtext= original_df['WEBTEXT'].apply(lambda row: filter_pages(row, MIN_HITCOUNT = 1, MAX_NUMPAGES = 250))
+#     return webtext
 
 #     global num
 #     num = 0
 
 #new_webtext = middle(original_df)
 #new_webtext = original_df['WEBTEXT'].apply(filter_pages)
-original_df['WEBTEXT'] = original_df['WEBTEXT'].apply(lambda row_li: filter_pages(row_li, 1, 250))
+original_df['WEBTEXT'] = original_df['WEBTEXT'].apply(lambda row_li: filter_pages(row_li, 1, 10))
 filtered_df = original_df[['NCESSCH', 'WEBTEXT']]
 #filtered_df['WEBTEXT'] = new_webtext
 
-filtered_df.to_pickle(folder_prefix + "nowdata/parsing/filtered_250.pkl")
+filtered_df.to_pickle(folder_prefix + "nowdata/parsing/filtered_10.pkl")
 #print(num)
