@@ -3,4 +3,9 @@
 *.shp filter=lfs diff=lfs merge=lfs -text
 *.json filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
-models/my_doc2vec_*
+models/my_doc2vec_* filter=lfs diff=lfs merge=lfs -text
+models/my_doc2vec_model_march_7.trainables.syn1neg.npy filter=lfs diff=lfs merge=lfs -text
+models/my_doc2vec_model_march_7.wv.vectors.npy filter=lfs diff=lfs merge=lfs -text
+models/my_doc2vec_model.trainables.syn1neg.npy filter=lfs diff=lfs merge=lfs -text
+models/my_doc2vec_model.wv.vectors.npy filter=lfs diff=lfs merge=lfs -text
+models/my_doc2vec_model_march_7 filter=lfs diff=lfs merge=lfs -text
