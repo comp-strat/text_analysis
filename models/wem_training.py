@@ -37,7 +37,7 @@ import gensim # For word embedding models
 from gensim.models.phrases import Phrases # Makes word2vec more robust: Looks not just at  To look for multi-word phrases within word2vec
 
 # For loading functions from files in data_tools directory:
-import sys; sys.path.insert(0, "../parsing")
+import sys; sys.path.insert(0, "../../text_analysis/parsing")
 
 
 # Import packages for multiprocessing
