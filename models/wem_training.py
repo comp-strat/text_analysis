@@ -37,7 +37,9 @@ import gensim # For word embedding models
 from gensim.models.phrases import Phrases # Makes word2vec more robust: Looks not just at  To look for multi-word phrases within word2vec
 
 # For loading functions from files in data_tools directory:
-import sys; sys.path.insert(0, "../../text_analysis/parsing")
+import sys; sys.path.insert(0, "../../data_tools/")
+from clean_text import clean_sentence, stopwords_make, punctstr_make, unicode_make
+import clean_text
 
 
 # Import packages for multiprocessing
@@ -86,8 +88,14 @@ except FileNotFoundError or OSError: # Handle common errors when calling os.path
     
     
 # ## Create lists of stopwords, punctuation, and unicode characters
+from clean_text import clean_sentence, stopwords_make, punctstr_make, unicode_make
+import clean_text
 
-from clean_functions import clean_sentence, stopwords_make, punctstr_make, unicode_make
+stop_words_list = stopwords_make() # Define old vocab file path if you want to remove first, dirty elements
+unicode_list = unicode_make()
+punctstr = punctstr_make()
+
+print("Sentence cleaning preliminaries complete...")
 
 print("Sentence cleaning preliminaries complete...")
 
