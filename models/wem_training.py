@@ -41,6 +41,13 @@ import sys; sys.path.insert(0, "../../data_tools/")
 from clean_text import clean_sentence, stopwords_make, punctstr_make, unicode_make
 import clean_text
 
+# ## Create lists of stopwords, punctuation, and unicode characters
+stop_words_list = stopwords_make() # Define old vocab file path if you want to remove first, dirty elements
+unicode_list = unicode_make()
+punctstr = punctstr_make()
+
+print("Sentence cleaning preliminaries complete...")
+
 
 # Import packages for multiprocessing
 import os # For navigation
@@ -86,19 +93,6 @@ try:
 except FileNotFoundError or OSError: # Handle common errors when calling os.path.getsize() on non-existent files
     phrased = False
     
-    
-# ## Create lists of stopwords, punctuation, and unicode characters
-from clean_text import clean_sentence, stopwords_make, punctstr_make, unicode_make
-import clean_text
-
-stop_words_list = stopwords_make() # Define old vocab file path if you want to remove first, dirty elements
-unicode_list = unicode_make()
-punctstr = punctstr_make()
-
-print("Sentence cleaning preliminaries complete...")
-
-print("Sentence cleaning preliminaries complete...")
-
 
 # ## Define helper functions
 
@@ -233,7 +227,7 @@ def preprocess_wem(tuplist): # inputs were formerly: (tuplist, start, limit)
 
         for chunk in tup[3].split('\n'): 
             for sent in sent_tokenize(chunk): # Tokenize chunk by sentences (in case >1 sentence in chunk)
-                sent = clean_sentence(sent) # Clean and tokenize sentence
+                sent = clean_sentence(sent, remove_stopwords=True) # Clean and tokenize sentence
                 
                 if ((sent == []) or (len(sent) == 0)): # If sentence is empty, continue to next sentence without appending
                     continue
@@ -257,6 +251,9 @@ def preprocess_wem(tuplist): # inputs were formerly: (tuplist, start, limit)
     pcount += 1 # Add to counter
     
     return
+
+
+print("Sentence cleaning preliminaries complete...")
 
 
 # ## Preprocessing I: Tokenize web text by sentences

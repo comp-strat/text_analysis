@@ -2,15 +2,6 @@
 #pip install nltk
 #pip install tqdm
 
-# For loading functions from files in data_tools directory:
-import sys; sys.path.insert(0, "../parsing")
-
-# ## Create lists of stopwords, punctuation, and unicode characters
-from clean_functions import clean_sentence, stopwords_make, punctstr_make, unicode_make
-import clean_functions
-
-print("Sentence cleaning preliminaries complete...")
-
 #!/usr/bin/env python
 # -*- coding: UTF-8
 
@@ -56,8 +47,20 @@ pool = Pool(processes=numcpus) # Pre-load number of CPUs into pool function
 import Cython # For parallelizing word2vec
 mpdo = False # Set to 'True' if using multiprocessing--faster for creating words by sentence file, but more complicated
 nltk.download('stopwords')
-
 nltk.download('punkt')
+
+# For loading functions from files in data_tools directory:
+import sys; sys.path.insert(0, "../../data_tools/")
+from clean_text import clean_sentence, stopwords_make, punctstr_make, unicode_make
+import clean_text
+
+# ## Create lists of stopwords, punctuation, and unicode characters
+stop_words_list = stopwords_make() # Define old vocab file path if you want to remove first, dirty elements
+unicode_list = unicode_make()
+punctstr = punctstr_make()
+
+print("Sentence cleaning preliminaries complete...")
+
 
 # ## Prepare to read data
 
@@ -94,83 +97,6 @@ except FileNotFoundError or OSError: # Handle common errors when calling os.path
     phrased = False
     
     
-# ## Create lists of stopwords, punctuation, and unicode characters
-
-# Create stopwords list
-stop_word_list = list(set(stopwords.words("english"))) # list of english stopwords
-
-# Add dates to stopwords
-for i in range(1,13):
-    stop_word_list.append(datetime.date(2008, i, 1).strftime('%B'))
-for i in range(1,13):
-    stop_word_list.append((datetime.date(2008, i, 1).strftime('%B')).lower())
-for i in range(1, 2100):
-    stop_word_list.append(str(i))
-
-# Add other common stopwords
-stop_word_list.append('00') 
-stop_word_list.extend(['mr', 'mrs', 'sa', 'fax', 'email', 'phone', 'am', 'pm', 'org', 'com', 
-                       'Menu', 'Contact Us', 'Facebook', 'Calendar', 'Lunch', 'Breakfast', 'FAQs', 'FAQ']) # web stopwords
-stop_word_list.extend(['el', 'en', 'la', 'los', 'para', 'las', 'san']) # Spanish stopwords
-stop_word_list.extend(['angeles', 'diego', 'harlem', 'bronx', 'austin', 'antonio']) # cities with many charter schools
-
-# Add state names & abbreviations (both uppercase and lowercase) to stopwords
-states = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", 
-          "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", 
-          "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", 
-          "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", 
-          "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WI", "WV", "WY", 
-          "Alabama", "Alaska", "Arizona", "Arkansas", "California", 
-          "Colorado", "Connecticut", "District of Columbia", "Delaware", "Florida", 
-          "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", 
-          "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", 
-          "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", 
-          "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
-          "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", 
-          "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", 
-          "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", 
-          "Vermont", "Virginia", "Washington", "Wisconsin", "West Virginia", "Wyoming"]
-for state in states:
-    stop_word_list.append(state)
-for state in [state.lower() for state in states]:
-    stop_word_list.append(state)
-
-# Add to stopwords useless and hard-to-formalize words/chars from first chunk of previous model vocab (e.g., a3d0, \fs19)
-# First create whitelist of useful terms probably in that list, explicitly exclude from junk words list both these and words with underscores (common phrases)
-whitelist = ["Pre-K", "pre-k", "pre-K", "preK", "prek", 
-             "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", 
-             "1st-grade", "2nd-grade", "3rd-grade", "4th-grade", "5th-grade", "6th-grade", 
-             "7th-grade", "8th-grade", "9th-grade", "10th-grade", "11th-grade", "12th-grade", 
-             "1st-grader", "2nd-grader", "3rd-grader", "4th-grader", "5th-grader", "6th-grader", 
-             "7th-grader", "8th-grader", "9th-grader", "10th-grader", "11th-grader", "12th-grader", 
-             "1stgrade", "2ndgrade", "3rdgrade", "4thgrade", "5thgrade", "6thgrade", 
-             "7thgrade", "8thgrade", "9thgrade", "10thgrade", "11thgrade", "12thgrade", 
-             "1stgrader", "2ndgrader", "3rdgrader", "4thgrader", "5thgrader", "6thgrader", 
-             "7thgrader", "8thgrader", "9thgrader", "10thgrader", "11thgrader", "12thgrader"]
-with open(vocab_path_old) as f: # Load vocab from previous model
-    junk_words = f.read().splitlines() 
-junk_words = [word for word in junk_words[:8511] if ((not "_" in word) 
-                                                     and (not any(term in word for term in whitelist)))]
-stop_word_list.extend(junk_words)
-    
-# Create punctuations list
-import string # for one method of eliminating punctuation
-punctuations = list(string.punctuation) # assign list of common punctuation symbols
-#addpuncts = ['*','•','©','–','`','’','“','”','»','.','×','|','_','§','…','⎫'] # a few more punctuations also common in web text
-#punctuations += addpuncts # Expand punctuations list
-#punctuations = list(set(punctuations)) # Remove duplicates
-punctuations.remove('-') # Don't remove hyphens - dashes at beginning and end of words are handled separately)
-punctuations.remove("'") # Don't remove possessive apostrophes - those at beginning and end of words are handled separately
-punctstr = "".join([char for char in punctuations]) # Turn into string for regex later
-
-# Create list of unicode characters
-unicode_list  = []
-for i in range(1000,3000):
-    unicode_list.append(chr(i))
-unicode_list.append("_cid:10") # Common in webtext junk
-
-print("Sentence cleaning preliminaries complete...")
-
 # ## Define helper functions
 
 def quickpickle_load(picklepath):
@@ -276,49 +202,6 @@ def load_tokslist(file_path):
     return textlist
 
 
-def clean_sentence(sentence):
-    """Removes numbers, emails, URLs, unicode characters, hex characters, and punctuation from a sentence 
-    separated by whitespaces. Returns a tokenized, cleaned list of words from the sentence.
-    
-    Args: 
-        Sentence, i.e. string that possibly includes spaces and punctuation
-    Returns: 
-        Cleaned & tokenized sentence, i.e. a list of cleaned, lower-case, one-word strings"""
-    
-    global unicode_list, punctstr, stop_word_list # Access useful lists
-    
-    # Replace unicode spaces, tabs, and underscores with spaces, and remove whitespaces from start/end of sentence:
-    sentence = sentence.replace(u"\xa0", u" ").replace(u"\\t", u" ").replace(u"_", u" ").strip(" ")
-    
-    # Remove hex characters (e.g., \xa0\, \x80):
-    sentence = re.sub(r'[^\x00-\x7f]', r'', sentence) #replace anything that starts with a hex character 
-
-    # Replace \\x, \\u, \\b, or anything that ends with \u2605
-    sentence = re.sub(r"\\x.*|\\u.*|\\b.*|\u2605$", "", sentence)
-        
-    # Remove all elements that appear in unicode_list (looks like r'u1000|u10001|'):
-    sentence = re.sub(r'|'.join(map(re.escape, unicode_list)), '', sentence)
-    
-    sentence = re.sub("\d+", "", sentence) # Remove numbers
-    
-    sent_list = [] # Initialize empty list to hold tokenized sentence (words added one at a time)
-    
-    for word in sentence.split(): # Split by spaces and iterate over words
-        
-        word = word.strip() # Remove leading and trailing spaces
-        
-        # Filter out emails and URLs:
-        if ("@" not in word and not word.startswith(('http', 'https', 'www', "//", "\\", 'x_', 'x/', 'srcimage', '\\')) and not word.endswith(('.com', '.net', '.gov', '.org', '.jpg', '.pdf', 'png', 'jpeg', 'php'))):
-            
-            # Remove punctuation (only after URLs removed):
-            word = re.sub(r"["+punctstr+"]+", r'', word).strip("'").strip("-") # Remove punctuations, and remove dashes and apostrophes only from start/end of words
-            if word not in stop_word_list: # Filter out stop words
-                
-                sent_list.append(word.lower()) # Add lower-cased word to list
-
-    return sent_list # Return clean, tokenized sentence
-
-
 def preprocess_wem(tuplist): # inputs were formerly: (tuplist, start, limit)
     
     '''This function cleans and tokenizes sentences, removing punctuation and numbers and making words into lower-case stems.
@@ -345,7 +228,7 @@ def preprocess_wem(tuplist): # inputs were formerly: (tuplist, start, limit)
 
         for chunk in tup[3].split('\n'): 
             for sent in sent_tokenize(chunk): # Tokenize chunk by sentences (in case >1 sentence in chunk)
-                sent = clean_sentence(sent) # Clean and tokenize sentence
+                sent = clean_sentence(sent, remove_stopwords=True) # Clean and tokenize sentence
                 
                 if ((sent == []) or (len(sent) == 0)): # If sentence is empty, continue to next sentence without appending
                     continue
@@ -546,12 +429,12 @@ for school in df['WEBTEXT']:
     
 #setting up multiprocessing
 import multiprocessing
-import utils
+from sklearn import utils
 cores = multiprocessing.cpu_count()
 
 # building vocab for doc2vec - dbow model
 print("Building dbow model...")
-model_dbow = gensim.models.Doc2Vec(dm=0, vector_size=300, negative=5, hs=0, min_count=2, sample = 0, workers=cores)
+model_dbow = gensim.models.Doc2Vec(dm=0, vector_size=300, window=8, negative=5, hs=0, min_count=50, sample = 0, workers=cores)
 model_dbow.build_vocab(docs_tagged)
 print("dbow model built successfully!")
 #training the model, epoch 30
@@ -563,7 +446,7 @@ print("dbow model trained successfully!")
 
 #building vocab for doc2vec - dmm model
 print("Buildling dmm model...")
-model_dmm = gensim.models.Doc2Vec(dm=1, dm_mean=1, vector_size=300, window=10, negative=5, min_count=1, workers=5, alpha=0.065, min_alpha=0.065)
+model_dmm = gensim.models.Doc2Vec(dm=1, dm_mean=1, vector_size=300, window=8, negative=5, min_count=50, workers=cores, alpha=0.025, min_alpha=0.065)
 model_dmm.build_vocab(docs_tagged)
 print("dmm model built successfully!")
 for epoch in range(30):
