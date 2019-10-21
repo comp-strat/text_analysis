@@ -5,6 +5,7 @@ experiential
 constructivist
 active inquiry
 activity-based
+activity/project
 child-centered
 child-directed
 child-initiated
@@ -17,11 +18,11 @@ experience-based
 experiential learning
 experientially
 experimentation
+field-based
 hands-on
 immersive
 inquiry/research
 inquiry-driven
-integrative
 integrative
 intellectually_stimulating
 interdisciplinary
@@ -31,7 +32,6 @@ learner-centered
 metacognitive
 minds-on
 multi-dimensional
-multi-disciplinary
 multi-disciplinary
 problem-centered
 problem-solving
